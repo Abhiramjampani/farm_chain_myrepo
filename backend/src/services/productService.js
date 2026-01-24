@@ -1,4 +1,5 @@
 const Product = require("../models/product");
+const qrService = require("./qrService");
 
 class ProductService {
     async findById(id) {
@@ -34,7 +35,18 @@ class ProductService {
     }
 
     async updateStatus(id, status) {
-        return Product.findByIdAndUpdate(id, { status }, { new: true });
+        const update = { status };
+        
+        if (status === 'active') {
+            const existing = await Product.findById(id);
+            if (!existing.qrCode) {
+                const qr = await qrService.generateQRCode(id);
+                update.qrCode = qr.code;
+                update.qrImage = qr.qrDataUrl;
+            }
+        }
+        
+        return Product.findByIdAndUpdate(id, update, { new: true });
     }
 
     async reduceQty(id, qty) {

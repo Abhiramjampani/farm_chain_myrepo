@@ -12,6 +12,7 @@ const productSchema = new mongoose.Schema({
     photos: [String],
     isOrganic: { type: Boolean, default: false },
     qrCode: { type: String },
+    qrImage: { type: String },
     status: { 
         type: String, 
         enum: ['draft', 'active', 'sold_out', 'expired'],

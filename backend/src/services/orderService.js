@@ -1,5 +1,5 @@
 const Order = require("../models/order");
-const { canTransition, getNextState } = require("./orderStateMachine");
+const { canTransition, getNextState } = require("../stateMachines/orderStateMachine");
 
 class OrderService {
     async findById(id) {

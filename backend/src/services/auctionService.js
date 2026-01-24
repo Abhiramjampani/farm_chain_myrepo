@@ -1,6 +1,6 @@
 const Auction = require("../models/auction");
 const Bid = require("../models/bid");
-const { canTransition, getNextState } = require("./auctionStateMachine");
+const { canTransition, getNextState } = require("../stateMachines/auctionStateMachine");
 
 class AuctionService {
     async findById(id) {

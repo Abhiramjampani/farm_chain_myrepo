@@ -5,7 +5,7 @@ const {
     getNextState, 
     isJourneyComplete,
     getStateLabel 
-} = require("../../services/journeyStateMachine");
+} = require("../../stateMachines/journeyStateMachine");
 
 const batchResolver = {
     Query: {

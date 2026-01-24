@@ -1,6 +1,6 @@
 const orderService = require("../../services/orderService");
 const productService = require("../../services/productService");
-const { getAllowedEvents } = require("../../services/orderStateMachine");
+const { getAllowedEvents } = require("../../stateMachines/orderStateMachine");
 
 const orderResolver = {
     Query: {

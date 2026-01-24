@@ -1,5 +1,5 @@
 const Batch = require("../models/batch");
-const { canDoActivity, getNextState } = require("./journeyStateMachine");
+const { canDoActivity, getNextState } = require("../stateMachines/journeyStateMachine");
 
 class BatchService {
     async findById(id) {

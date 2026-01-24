@@ -1,4 +1,5 @@
 const productService = require("../../services/productService");
+const traceabilityService = require("../../services/traceabilityService");
 
 const productResolver = {
     Query: {
@@ -11,6 +12,9 @@ const productResolver = {
         },
         listProducts: async (_, { filters }) => {
             return productService.findActive(filters || {});
+        },
+        traceProduct: async (_, { qrCode }) => {
+            return traceabilityService.getTraceByQR(qrCode);
         }
     },
 
@@ -78,3 +82,4 @@ const productResolver = {
 };
 
 module.exports = productResolver;
+
