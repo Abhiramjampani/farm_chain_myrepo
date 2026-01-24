@@ -7,7 +7,7 @@ type Product {
   productName: String!
   category: String!
   unitPrice: Float!
-  availableQty: Float!
+  availableQty: Int!
   productImages: [String!]!
   expiresBefore: Date
   batch: ID!
@@ -34,7 +34,7 @@ input ProductInput {
   productName: String!
   category: String!
   unitPrice: Float!
-  availableQty: Float!
+  availableQty: Int!
   productImages: [String!]!
   expiresBefore: Date
   batch: ID!
@@ -52,7 +52,7 @@ input ProductUpdateInput {
   productName: String
   category: String
   unitPrice: Float
-  availableQty: Float
+  availableQty: Int
   productImages: [String!]
   expiresBefore: Date
   qualityGrade: String
