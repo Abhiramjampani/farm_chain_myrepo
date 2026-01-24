@@ -1,30 +1,34 @@
 const Farm = require("../models/farm");
 
 class FarmService {
-    async findById(id) {
-        return Farm.findById(id);
-    }
+  async findById(id) {
+    return Farm.findById(id).populate("farmer");
+  }
 
-    async findAll() {
-        return Farm.find();
-    }
+  async findByFarmer(farmerId) {
+    return Farm.find({ farmer: farmerId }).populate("farmer");
+  }
 
-    async create(farmData) {
-        const farm = new Farm(farmData);
-        return await farm.save();
-    }
+  async findAll() {
+    return Farm.find().populate("farmer");
+  }
 
-    async update(id, farmData) {
-        return Farm.findByIdAndUpdate(
-            id,
-            { $set: farmData },
-            { new: true, runValidators: true }
-        );
-    }
+  async create(farmData) {
+    const farm = new Farm(farmData);
+    return await farm.save();
+  }
 
-    async delete(id) {
-        return Farm.findByIdAndDelete(id);
-    }
+  async update(id, farmData) {
+    return Farm.findByIdAndUpdate(
+      id,
+      { $set: farmData },
+      { new: true, runValidators: true },
+    );
+  }
+
+  async delete(id) {
+    return Farm.findByIdAndDelete(id);
+  }
 }
 
 module.exports = new FarmService();

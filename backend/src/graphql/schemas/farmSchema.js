@@ -9,6 +9,7 @@ const typeDefs = `#graphql
   }
   type Farm {
     id: ID!
+    farmer: User
     location: Coordinates!
     size: Float!
     pinCode: String!
@@ -20,6 +21,7 @@ const typeDefs = `#graphql
   type Query {
     farm(id: ID!): Farm
     farms: [Farm!]
+    myFarms: [Farm!]
   }
   
   type Mutation {
@@ -27,6 +29,6 @@ const typeDefs = `#graphql
     updateFarm(id: ID!, location: CoordinatesInput, size: Float, pinCode: String, soilType: String, organicStatus: String, photo: String): Farm!
     deleteFarm(id: ID!): Farm!
   }
-`
+`;
 
 module.exports = typeDefs;
