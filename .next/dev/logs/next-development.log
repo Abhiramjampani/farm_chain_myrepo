@@ -1,0 +1,7 @@
+[03:51:17.025] Server  ERROR   ⨯ Error: Cannot find module 'next/dist/client/components/builtin/global-not-found'
+Require stack:
+- /Users/swaroopankam/Desktop/supply-chain-tracker/node_modules/next/dist/server/dev/on-demand-entry-handler.js
+- /Users/swaroopankam/Desktop/supply-chain-tracker/node_modules/next/dist/server/dev/hot-reloader-turbopack.js
+- /Users/swaroopankam/Desktop/supply-chain-tracker/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/swaroopankam/Desktop/supply-chain-tracker/node_modules/next/dist/server/lib/router-server.js
+- /Users/swaroopankam/Desktop/supply-chain-tracker/node_modules/next/dist/server/lib/start-server.js
