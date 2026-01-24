@@ -93,6 +93,12 @@ class BusinessController {
 
         return { success: true, message: "Password reset successful" };
     }
+
+    async getBusinessFromToken(token) {
+        const decoded = authService.verifyToken(token);
+        if (!decoded) return null;
+        return businessService.findById(decoded.userId);
+    }
 }
 
 module.exports = new BusinessController();

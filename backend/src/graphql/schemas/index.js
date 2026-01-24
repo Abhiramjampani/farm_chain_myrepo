@@ -4,6 +4,7 @@ const batchSchema = require('./batchSchema');
 const businessSchema = require('./businessSchema');
 const productSchema = require('./productSchema');
 const orderSchema = require('./orderSchema');
+const auctionSchema = require('./auctionSchema');
 
 const typeDefs = [
     userSchema,
@@ -11,7 +12,8 @@ const typeDefs = [
     batchSchema,
     businessSchema,
     productSchema,
-    orderSchema
+    orderSchema,
+    auctionSchema
 ];
 
 module.exports = typeDefs;
