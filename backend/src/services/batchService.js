@@ -1,4 +1,5 @@
 const Batch = require("../models/batch");
+const { canDoActivity, getNextState } = require("./journeyStateMachine");
 
 class BatchService {
     async findById(id) {
@@ -34,6 +35,22 @@ class BatchService {
                 ...activity,
                 date: activity.date || new Date()
             }));
+
+            const currentBatch = await Batch.findById(id);
+            if (!currentBatch) {
+                throw new Error("Batch not found");
+            }
+
+            const currentState = currentBatch.activities.length > 0
+                ? currentBatch.activities[currentBatch.activities.length - 1].activityType.toLowerCase()
+                : "idle";
+
+            const newActivityType = batchData.activities[0].activityType;
+
+            const isValid = canDoActivity(currentState, newActivityType);
+            if (!isValid) {
+                throw new Error(`Invalid activity sequence: Cannot perform ${newActivityType} from state ${currentState}`);
+            }
         }
 
         if (batchData.harvests && batchData.harvests.length > 0) {
@@ -55,6 +72,22 @@ class BatchService {
             activityData.date = new Date();
         }
 
+        const currentBatch = await Batch.findById(batchId);
+        if (!currentBatch) {
+            throw new Error("Batch not found");
+        }
+
+        const currentState = currentBatch.activities.length > 0
+            ? currentBatch.activities[currentBatch.activities.length - 1].activityType.toLowerCase()
+            : "idle";
+
+        const newActivityType = activityData.activityType;
+
+        const isValid = canDoActivity(currentState, newActivityType);
+        if (!isValid) {
+            throw new Error(`Invalid activity sequence: Cannot perform ${newActivityType} from state ${currentState}`);
+        }
+
         return Batch.findByIdAndUpdate(
             batchId,
             { $push: { activities: activityData } },
@@ -62,14 +95,32 @@ class BatchService {
         ).populate("farm");
     }
 
-    async recordHarvest(batchId, harvestData) {
+    async logActivity(batchId, activityData, nextState) {
+        if (!activityData.date) {
+            activityData.date = new Date();
+        }
+
+        return Batch.findByIdAndUpdate(
+            batchId,
+            { 
+                $push: { activities: activityData },
+                $set: { currentState: nextState }
+            },
+            { new: true, runValidators: true }
+        ).populate("farm");
+    }
+
+    async recordHarvest(batchId, harvestData, nextState = "harvest") {
         if (!harvestData.harvestDate) {
             harvestData.harvestDate = new Date();
         }
 
         return Batch.findByIdAndUpdate(
             batchId,
-            { $push: { harvests: harvestData } },
+            { 
+                $push: { harvests: harvestData },
+                $set: { currentState: nextState }
+            },
             { new: true, runValidators: true }
         ).populate("farm");
     }

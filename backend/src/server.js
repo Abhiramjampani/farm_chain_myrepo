@@ -4,6 +4,7 @@ const connectDB = require('../config/database');
 const typeDefs = require('./graphql/schemas');
 const resolvers = require('./graphql/resolvers');
 const authController = require('./controllers/authController');
+const businessController = require('./controllers/businessController');
 
 const PORT = process.env.PORT || 4000;
 
@@ -31,7 +32,8 @@ const startServer = async () => {
             context: async ({ req }) => {
                 const token = req.headers.authorization;
                 const user = await authController.getUserFromToken(token);
-                return { user };
+                const business = await businessController.getBusinessFromToken(token);
+                return { user, business };
             },
         });
 
@@ -44,3 +46,4 @@ const startServer = async () => {
 };
 
 module.exports = { createServer, startServer };
+
