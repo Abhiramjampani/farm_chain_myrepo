@@ -1,6 +1,5 @@
 const { createMachine, createActor } = require("xstate");
 
-// State machine for farmer journey - enforces correct activity sequence
 const farmerJourneyMachine = createMachine({
     id: "farmerJourney",
     initial: "idle",
@@ -15,20 +14,20 @@ const farmerJourneyMachine = createMachine({
         },
         watering: {
             on: { 
-                WATERING: "watering",       // Can water multiple times
+                WATERING: "watering",
                 FERTILIZER: "fertilizer"
             }
         },
         fertilizer: {
             on: { 
-                FERTILIZER: "fertilizer",   // Can fertilize multiple times
+                FERTILIZER: "fertilizer",
                 PESTICIDE: "pesticide",
-                HARVEST: "harvest"          // Skip pesticide if organic!
+                HARVEST: "harvest"
             }
         },
         pesticide: {
             on: { 
-                PESTICIDE: "pesticide",     // Can apply multiple times
+                PESTICIDE: "pesticide",
                 HARVEST: "harvest"
             }
         },
@@ -44,32 +43,27 @@ const farmerJourneyMachine = createMachine({
     }
 });
 
-// Get allowed next activities from current state
 function getAllowedActivities(currentState) {
     const stateNode = farmerJourneyMachine.states[currentState];
     if (!stateNode || !stateNode.on) return [];
     return Object.keys(stateNode.on);
 }
 
-// Check if activity is allowed from current state
 function canDoActivity(currentState, activityType) {
     const allowed = getAllowedActivities(currentState);
     return allowed.includes(activityType);
 }
 
-// Get next state after performing activity
 function getNextState(currentState, activityType) {
     const stateNode = farmerJourneyMachine.states[currentState];
     if (!stateNode || !stateNode.on) return currentState;
     return stateNode.on[activityType] || currentState;
 }
 
-// Check if journey is complete
 function isJourneyComplete(currentState) {
     return currentState === "shipped";
 }
 
-// Get human-readable state name
 function getStateLabel(state) {
     const labels = {
         idle: "Not Started",

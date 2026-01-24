@@ -3,14 +3,15 @@ const mongoose = require("mongoose");
 const activitySchema = new mongoose.Schema({
     activityType: {
         type: String,
-        enum: ["FERTILIZER", "PESTICIDE", "WATERING"],
+        enum: ["SEEDING", "WATERING", "FERTILIZER", "PESTICIDE", "HARVEST", "PACKED", "SHIPPED"],
         required: true
     },
     date: { type: Date, required: true },
     productName: { type: String },
     quantity: { type: Number },
     photo: { type: String },
-    whoClass: { type: String }
+    whoClass: { type: String },
+    notes: { type: String }
 });
 
 const harvestSchema = new mongoose.Schema({
@@ -32,6 +33,11 @@ const batchSchema = new mongoose.Schema({
     seedSource: { type: String },
     sowingDate: { type: Date, required: true },
     expectedHarvestDate: { type: Date },
+    currentState: { 
+        type: String, 
+        enum: ["idle", "seeding", "watering", "fertilizer", "pesticide", "harvest", "packed", "shipped"],
+        default: "idle"
+    },
     activities: [activitySchema],
     harvests: [harvestSchema]
 }, {

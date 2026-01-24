@@ -11,6 +11,8 @@ type Batch {
   seedSource: String
   sowingDate: Date!
   expectedHarvestDate: Date
+  currentState: String!
+  stateLabel: String
   activities: [Activity!]!
   harvests: [Harvest!]!
 }
@@ -23,6 +25,7 @@ type Activity {
   quantity: Float
   photo: String
   whoClass: String
+  notes: String
 }
 
 type Harvest {
@@ -34,9 +37,20 @@ type Harvest {
 }
 
 enum ActivityType {
+  SEEDING
+  WATERING
   FERTILIZER
   PESTICIDE
-  WATERING
+  HARVEST
+  PACKED
+  SHIPPED
+}
+
+type JourneyState {
+  currentState: String!
+  stateLabel: String!
+  allowedActivities: [ActivityType!]!
+  isComplete: Boolean!
 }
 
 input BatchInput {
@@ -58,6 +72,7 @@ input ActivityInput {
   quantity: Float
   photo: String
   whoClass: String
+  notes: String
 }
 
 input HarvestInput {
@@ -82,13 +97,14 @@ input BatchUpdateInput {
 type Query {
   getBatch(id: ID!): Batch
   listBatches(farm: ID!): [Batch!]!
+  getJourneyState(batchId: ID!): JourneyState
 }
 
 type Mutation {
   createBatch(input: BatchInput!): Batch
   updateBatch(id: ID!, input: BatchUpdateInput!): Batch
   deleteBatch(id: ID!): Batch
-  addActivity(batchId: ID!, input: ActivityInput!): Batch
+  logActivity(batchId: ID!, input: ActivityInput!): Batch
   recordHarvest(batchId: ID!, input: HarvestInput!): Batch
 }
 
