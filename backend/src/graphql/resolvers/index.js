@@ -1,4 +1,4 @@
-<<<<<<< Updated upstream
+
 const userResolvers = require("./userResolver");
 const farmResolver = require("./farmResolver");
 const batchResolver = require("./batchResolver");
@@ -7,48 +7,19 @@ const productResolver = require("./productResolver");
 const orderResolver = require("./orderResolver");
 const auctionResolver = require("./auctionResolver");
 const reviewResolver = require("./reviewResolver");
-
-const resolvers = {
-  Query: {
-    ...userResolvers.Query,
-    ...farmResolver.Query,
-    ...batchResolver.Query,
-    ...businessResolver.Query,
-    ...productResolver.Query,
-    ...orderResolver.Query,
-    ...auctionResolver.Query,
-    ...reviewResolver.Query,
-  },
-  Mutation: {
-    ...userResolvers.Mutation,
-    ...farmResolver.Mutation,
-    ...batchResolver.Mutation,
-    ...businessResolver.Mutation,
-    ...productResolver.Mutation,
-    ...orderResolver.Mutation,
-    ...auctionResolver.Mutation,
-    ...reviewResolver.Mutation,
-  },
-  User: userResolvers.User,
-  Business: businessResolver.Business,
-  Product: productResolver.Product,
-  Order: orderResolver.Order,
-  Auction: auctionResolver.Auction,
-  Bid: auctionResolver.Bid,
-  Review: reviewResolver.Review,
-  Batch: batchResolver.Batch,
-=======
-const userResolvers = require('./userResolver');
-const farmResolver = require('./farmResolver');
-const batchResolver = require('./batchResolver');
-const profileResolver = require('./profileResolver');
-const geocodingResolver = require('./geocodingResolver');
+const profileResolver = require("./profileResolver");
+const geocodingResolver = require("./geocodingResolver");
 
 const resolvers = {
     Query: {
         ...userResolvers.Query,
         ...farmResolver.Query,
         ...batchResolver.Query,
+        ...businessResolver.Query,
+        ...productResolver.Query,
+        ...orderResolver.Query,
+        ...auctionResolver.Query,
+        ...reviewResolver.Query,
         ...profileResolver.Query,
         ...geocodingResolver.Query
     },
@@ -56,11 +27,21 @@ const resolvers = {
         ...userResolvers.Mutation,
         ...farmResolver.Mutation,
         ...batchResolver.Mutation,
+        ...businessResolver.Mutation,
+        ...productResolver.Mutation,
+        ...orderResolver.Mutation,
+        ...auctionResolver.Mutation,
+        ...reviewResolver.Mutation,
         ...profileResolver.Mutation
     },
     User: userResolvers.User,
-    Batch: batchResolver.Batch
->>>>>>> Stashed changes
+    Business: businessResolver.Business,
+    Product: productResolver.Product,
+    Order: orderResolver.Order,
+    Auction: auctionResolver.Auction,
+    Bid: auctionResolver.Bid,
+    Review: reviewResolver.Review,
+    Batch: batchResolver.Batch,
 };
 
 module.exports = resolvers;
