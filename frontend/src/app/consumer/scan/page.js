@@ -26,6 +26,7 @@ import {
   Store,
   Package
 } from "lucide-react";
+import ScannerModal from '@/components/common/ScannerModal';
 
 export default function ConsumerScan() {
   const searchParams = useSearchParams();
@@ -33,6 +34,7 @@ export default function ConsumerScan() {
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState(null);
   const [qrInput, setQrInput] = useState("");
+  const [showScanner, setShowScanner] = useState(false);
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
@@ -45,6 +47,14 @@ export default function ConsumerScan() {
 
   const handleScanWithCode = async (code) => {
     if (!code) return;
+
+    // Clean URL if present
+    let cleanCode = code;
+    if (code.includes('/verify/')) {
+        const parts = code.split('/verify/');
+        cleanCode = parts[1];
+    }
+    setQrInput(cleanCode);
 
     setIsScanning(true);
     setError(null);
@@ -209,9 +219,12 @@ export default function ConsumerScan() {
                   </div>
                 </div>
 
-                <button className="w-full py-4 bg-slate-100 text-slate-600 rounded-xl font-semibold hover:bg-slate-200 transition-colors flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => setShowScanner(true)}
+                  className="w-full py-4 bg-slate-100 text-slate-600 rounded-xl font-semibold hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
+                >
                   <Camera className="w-5 h-5" />
-                  Open Camera Scanner
+                  Open Camera Scanner / Upload Image
                 </button>
               </div>
             </motion.div>
@@ -466,6 +479,11 @@ export default function ConsumerScan() {
           </motion.div>
         )}
       </div>
+      <ScannerModal 
+        isOpen={showScanner} 
+        onClose={() => setShowScanner(false)} 
+        onScan={handleScanWithCode}
+      />
     </ConsumerLayout>
   );
 }

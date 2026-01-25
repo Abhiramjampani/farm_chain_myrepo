@@ -59,7 +59,6 @@ export const LIST_BATCHES_SIMPLE_QUERY = `
   }
 `;
 
-// ... (LIST_BATCHES_SIMPLE_QUERY remains same)
 
 export const GET_BATCH_QUERY = `
   query GetBatch($id: ID!) {
@@ -96,7 +95,16 @@ export const GET_BATCH_QUERY = `
   }
 `;
 
-// ... (GET_JOURNEY_STATE_QUERY remains same)
+export const GET_JOURNEY_STATE_QUERY = `
+  query GetJourneyState($batchId: ID!) {
+    getJourneyState(batchId: $batchId) {
+      currentState
+      stateLabel
+      allowedActivities
+      isComplete
+    }
+  }
+`;
 
 export const LOG_ACTIVITY_MUTATION = `
   mutation LogActivity($batchId: ID!, $input: ActivityInput!) {
