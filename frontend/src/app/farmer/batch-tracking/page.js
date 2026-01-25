@@ -31,12 +31,16 @@ import {
     CheckCircle2,
     AlertCircle,
     ExternalLink,
-    Zap
+    Zap,
+    QrCode,
+    Download
 } from 'lucide-react';
 import { graphqlRequest } from '@/lib/apollo-client';
 import { MY_FARMS_QUERY } from '@/lib/graphql/farm';
 import { CREATE_BATCH_MUTATION, LIST_BATCHES_QUERY, DELETE_BATCH_MUTATION, LOG_ACTIVITY_MUTATION, VERIFY_ORGANIC_QUERY } from '@/lib/graphql/batch';
 import { CREATE_PRODUCT_MUTATION } from '@/lib/graphql/product';
+import QRCode from 'react-qr-code';
+import { toPng } from 'html-to-image';
 
 const CROP_CATEGORIES = ['Vegetables', 'Fruits', 'Grains', 'Pulses', 'Spices', 'Other'];
 
@@ -65,6 +69,7 @@ export default function BatchTracking() {
     const [error, setError] = useState('');
     const [verificationResults, setVerificationResults] = useState({});
     const [verifying, setVerifying] = useState({});
+    const [showQRModal, setShowQRModal] = useState(false);
 
     const [formData, setFormData] = useState({
         farm: '',
@@ -304,6 +309,27 @@ export default function BatchTracking() {
             console.error('Verification failed:', err);
         } finally {
             setVerifying(prev => ({ ...prev, [batchId]: false }));
+        }
+    };
+
+    const openQRModal = (batch) => {
+        setSelectedBatch(batch);
+        setShowQRModal(true);
+    };
+
+    const handleDownloadQR = () => {
+        const node = document.getElementById('qr-code-node');
+        if (node) {
+            toPng(node)
+                .then((dataUrl) => {
+                    const link = document.createElement('a');
+                    link.download = `${selectedBatch?.cropName || 'batch'}-qrcode.png`;
+                    link.href = dataUrl;
+                    link.click();
+                })
+                .catch((err) => {
+                    console.error('Could not generate QR image', err);
+                });
         }
     };
 
@@ -761,6 +787,16 @@ export default function BatchTracking() {
                                             >
                                                 <ShoppingCart className="w-4 h-4" />
                                                 Add to Product
+                                            </motion.button>
+
+                                            <motion.button 
+                                                onClick={() => openQRModal(batch)}
+                                                className="px-4 py-2 bg-stone-100 text-stone-600 rounded-lg font-semibold hover:bg-stone-200 transition-colors text-sm flex items-center gap-2"
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                            >
+                                                <QrCode className="w-4 h-4" />
+                                                QR Code
                                             </motion.button>
                                         </div>
                                     </div>
@@ -1267,6 +1303,74 @@ export default function BatchTracking() {
                                         </button>
                                     </div>
                                 </form>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* QR Code Modal */}
+                <AnimatePresence>
+                    {showQRModal && selectedBatch && (
+                        <motion.div
+                            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowQRModal(false)}
+                        >
+                            <motion.div
+                                className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center"
+                                initial={{ scale: 0.9, y: 20 }}
+                                animate={{ scale: 1, y: 0 }}
+                                exit={{ scale: 0.9, y: 20 }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-xl font-bold text-stone-800">Scan to Verify</h2>
+                                    <button onClick={() => setShowQRModal(false)} className="p-2 hover:bg-stone-100 rounded-xl">
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </div>
+
+                                <div className="bg-white p-4 rounded-xl mb-6 flex justify-center border border-stone-100" id="qr-code-node">
+                                    <QRCode 
+                                        value={`${typeof window !== 'undefined' ? window.location.origin : 'https://farmchain.com'}/verify/${selectedBatch.id}`}
+                                        level="H"
+                                        size={200}
+                                        style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                                        viewBox={`0 0 256 256`}
+                                    />
+                                </div>
+
+                                {/* URL Display */}
+                                <div className="mb-6 p-3 bg-stone-50 rounded-xl border border-stone-100 flex items-center justify-between gap-2 overflow-hidden">
+                                    <p className="text-xs text-stone-500 font-mono truncate text-left">
+                                        {`${typeof window !== 'undefined' ? window.location.origin : 'https://farmchain.com'}/verify/${selectedBatch.id}`}
+                                    </p>
+                                    <button 
+                                        onClick={() => {
+                                            const url = `${window.location.origin}/verify/${selectedBatch.id}`;
+                                            navigator.clipboard.writeText(url);
+                                            // You could add a toast here if you had one, for now it just copies
+                                        }}
+                                        className="text-stone-400 hover:text-stone-600 p-1"
+                                        title="Copy Link"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                                    </button>
+                                </div>
+
+                                <p className="text-sm text-stone-500 mb-6">
+                                    Print this code and stick it on your product packaging. Consumers can scan it to see the blockchain verification.
+                                </p>
+
+                                <button 
+                                    onClick={handleDownloadQR}
+                                    className="w-full px-6 py-3 bg-stone-800 text-white rounded-xl font-semibold hover:bg-stone-900 flex items-center justify-center gap-2 shadow-lg"
+                                >
+                                    <Download className="w-5 h-5" />
+                                    Download PNG
+                                </button>
                             </motion.div>
                         </motion.div>
                     )}

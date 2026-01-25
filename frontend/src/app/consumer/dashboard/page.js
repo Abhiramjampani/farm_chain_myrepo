@@ -318,33 +318,54 @@ export default function ConsumerDashboard() {
                   {products.slice(0, 8).map((product, index) => (
                     <motion.div
                       key={product.id}
-                      className="relative bg-white p-4 rounded-2xl border border-slate-200 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/10 transition-all cursor-pointer group flex flex-col aspect-square justify-between overflow-hidden"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
+                      className="bg-white rounded-[2rem] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden hover:shadow-[0_20px_50px_-12px_rgba(37,99,235,0.15)] hover:border-blue-500/30 transition-all duration-300 group flex flex-col h-full"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
                     >
-                      {/* Original Card Content */}
-                      <div className="flex justify-center flex-1 items-center relative z-10">
-                         <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center text-5xl shadow-sm">
-                           {getProductEmoji(product.category)}
-                         </div>
-                      </div>
-                      
-                      <div className="text-center my-2 relative z-10">
-                        <h3 className="font-bold text-slate-900 leading-tight mb-1 line-clamp-2">{product.title}</h3>
-                        <p className="text-xs text-slate-400 font-medium truncate">{product.farmer?.name}</p>
-                      </div>
+                        <div className="relative h-40 bg-slate-50 overflow-hidden shrink-0">
+                            {/* Background Pattern */}
+                             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                             
+                            {/* Emoji Hero */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                 <span className="text-7xl drop-shadow-2xl transform group-hover:scale-110 transition-transform duration-500 filter group-hover:brightness-110">
+                                     {getProductEmoji(product.category)}
+                                 </span>
+                            </div>
 
-                      <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100 relative z-10">
-                         <span className="font-black text-slate-700 text-sm">₹{product.pricePerKg}</span>
-                         <Link 
-                            href={`/consumer/scan?qr=${product.qrCode}`}
-                            className="bg-slate-100 hover:bg-emerald-500 hover:text-white text-slate-400 p-2 rounded-lg transition-colors flex items-center justify-center"
-                            onClick={(e) => e.stopPropagation()}
-                         >
-                             <ArrowRight className="w-4 h-4" />
-                         </Link>
-                      </div>
+                            {/* Badge Overlay */}
+                            <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
+                                {product.isOrganic && (
+                                     <div className="px-2 py-1 bg-emerald-500/90 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-wider text-white shadow-sm flex items-center gap-1">
+                                        <Leaf size={10} strokeWidth={3} /> Organic
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="p-5 flex flex-col flex-1">
+                          <div className="mb-auto">
+                              <h3 className="text-lg font-bold text-slate-800 mb-1 leading-tight group-hover:text-blue-600 transition-colors line-clamp-1">
+                                {product.title}
+                              </h3>
+                              <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3 flex items-center gap-1">
+                                <Leaf size={12} className="text-emerald-500" /> {product.farmer?.name}
+                              </p>
+                              
+                              <div className="flex items-center gap-2 mb-4">
+                                   <span className="text-2xl font-black text-slate-900 tracking-tight">₹{product.pricePerKg}</span>
+                                   <span className="text-[10px] font-bold text-slate-400 uppercase">/ kg</span>
+                              </div>
+                          </div>
+
+                          <Link href={`/consumer/scan?qr=${product.qrCode}`} className="block">
+                            <button className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-sm shadow-lg shadow-slate-900/10 hover:bg-blue-600 hover:shadow-blue-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                                <ScanLine className="w-4 h-4" />
+                                Trace
+                            </button>
+                          </Link>
+                        </div>
                     </motion.div>
                   ))}
                 </div>

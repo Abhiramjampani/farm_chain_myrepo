@@ -1,0 +1,33 @@
+Debugger listening on ws://127.0.0.1:57599/6be99c61-d5ce-463c-abfb-c2055e61c124
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+Debugger listening on ws://127.0.0.1:57609/03275ba4-3f45-466e-9463-839086498c45
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+
+/Users/stack/Documents/Farm-Chain/frontend/src/app/consumer/scan/page.js
+  46:6  warning  React Hook useEffect has a missing dependency: 'handleScanWithCode'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/stack/Documents/Farm-Chain/frontend/src/components/common/ScannerModal.js
+   59:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  57 |     useEffect(() => {
+  58 |         if (isOpen && mode === 'camera') {
+> 59 |             setScanning(true);
+     |             ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  60 |             setError('');
+  61 |             
+  62 |             // Cleanup previous instance if any (safety check)  react-hooks/set-state-in-effect
+   99:8   warning  React Hook useEffect has a missing dependency: 'onScanSuccess'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-hooks/exhaustive-deps
+  139:26  error    'ScanLine' is not defined                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react/jsx-no-undef
+
+✖ 4 problems (2 errors, 2 warnings)
+
+Waiting for the debugger to disconnect...
+Waiting for the debugger to disconnect...

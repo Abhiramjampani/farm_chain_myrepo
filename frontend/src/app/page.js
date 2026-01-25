@@ -199,7 +199,7 @@ export default function LandingPage() {
                 </button>
               </Link>
               <Link href="/auth/login?role=consumer">
-                <button className="h-14 px-8 rounded-xl bg-black/60 hover:bg-black/70 border border-emerald-500/40 text-emerald-100 font-bold flex items-center gap-2 backdrop-blur-md hover:-translate-y-1 transition-transform">
+                <button className="h-14 px-8 rounded-xl bg-black/60 hover:bg-black/70 border border-emerald-500/40 text-emerald-100 font-bold flex items-center gap-2 backdrop-blur-md hover:-translate-y-1 transition-transform cursor-pointer">
                   <ScanLine className="w-5 h-5 text-emerald-400" />
                   Verify Product
                 </button>
@@ -232,6 +232,7 @@ export default function LandingPage() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }

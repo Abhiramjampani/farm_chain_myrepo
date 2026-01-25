@@ -44,12 +44,15 @@ export const LIST_BATCHES_QUERY = `
 `;
 
 export const LIST_BATCHES_SIMPLE_QUERY = `
-  query ListBatches($farm: ID!) {
+  query ListBatchesSimple($farm: ID!) {
     listBatches(farm: $farm) {
       id
       cropCategory
       cropName
       variety
+      seedSource
+      sowingDate
+      expectedHarvestDate
       currentState
       stateLabel
     }
@@ -91,7 +94,16 @@ export const GET_BATCH_QUERY = `
   }
 `;
 
-// ... (GET_JOURNEY_STATE_QUERY remains same)
+export const GET_JOURNEY_STATE_QUERY = `
+  query GetJourneyState($batchId: ID!) {
+    getJourneyState(batchId: $batchId) {
+      currentState
+      stateLabel
+      allowedActivities
+      isComplete
+    }
+  }
+`;
 
 export const LOG_ACTIVITY_MUTATION = `
   mutation LogActivity($batchId: ID!, $input: ActivityInput!) {
