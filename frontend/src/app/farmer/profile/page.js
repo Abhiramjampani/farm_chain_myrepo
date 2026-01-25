@@ -11,13 +11,14 @@ import {
     CREATE_USER_PROFILE
 } from '@/lib/graphql/profile';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/components/ui/Toast';
 
 export default function Profile() {
     const { user } = useAuth();
+    const toast = useToast();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
-    const [successMessage, setSuccessMessage] = useState('');
     const [profileExists, setProfileExists] = useState(false);
 
     // Form States
@@ -116,7 +117,6 @@ export default function Profile() {
         try {
             setSaving(true);
             setError(null);
-            setSuccessMessage('');
 
             const input = {
                 name: generalData.name,
@@ -137,9 +137,9 @@ export default function Profile() {
             } else {
                 await graphqlRequest(UPDATE_USER_PROFILE, { input });
             }
-            setSuccessMessage("Profile saved successfully!");
-            setTimeout(() => setSuccessMessage(''), 3000);
+            toast.success("Profile saved successfully!");
         } catch (err) {
+            toast.error(err.message || "Failed to save profile");
             setError(err.message || "Failed to save profile");
         } finally {
             setSaving(false);
@@ -150,11 +150,10 @@ export default function Profile() {
         try {
             setSaving(true);
             setError(null);
-            setSuccessMessage('');
             await graphqlRequest(UPDATE_USER_BANK_DETAILS, { input: bankData });
-            setSuccessMessage("Bank details saved successfully!");
-            setTimeout(() => setSuccessMessage(''), 3000);
+            toast.success("Bank details saved successfully!");
         } catch (err) {
+            toast.error(err.message || "Failed to save bank details");
             setError(err.message || "Failed to save bank details");
         } finally {
             setSaving(false);
@@ -165,11 +164,10 @@ export default function Profile() {
         try {
             setSaving(true);
             setError(null);
-            setSuccessMessage('');
             await graphqlRequest(UPDATE_USER_NOTIFICATION_SETTINGS, { input: notificationData });
-            setSuccessMessage("Notification preferences saved!");
-            setTimeout(() => setSuccessMessage(''), 3000);
+            toast.success("Notification preferences saved!");
         } catch (err) {
+            toast.error(err.message || "Failed to save settings");
             setError(err.message || "Failed to save settings");
         } finally {
             setSaving(false);
@@ -200,17 +198,11 @@ export default function Profile() {
                     </div>
                 </div>
 
-                {/* Alerts */}
+                {/* Error Alert - kept for inline validation errors */}
                 {error && (
                     <div className="p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-2 border border-red-100">
                         <AlertCircle className="w-5 h-5" />
                         {error}
-                    </div>
-                )}
-                {successMessage && (
-                    <div className="p-4 bg-emerald-50 text-emerald-600 rounded-xl flex items-center gap-2 border border-emerald-100">
-                        <Save className="w-5 h-5" />
-                        {successMessage}
                     </div>
                 )}
 

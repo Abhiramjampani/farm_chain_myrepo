@@ -1,4 +1,4 @@
-const GRAPHQL_URL = "http://localhost:3010/graphql";
+const GRAPHQL_URL = "http://localhost:3020/graphql";
 
 export async function graphqlRequest(query, variables = {}) {
   const token =

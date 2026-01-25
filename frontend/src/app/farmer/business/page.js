@@ -29,9 +29,11 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/components/ui/Toast';
 
 export default function BusinessPage() {
     const { user } = useAuth(); // Add this
+    const toast = useToast();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState("auctions");
     const [auctions, setAuctions] = useState([]);
@@ -127,19 +129,19 @@ export default function BusinessPage() {
             const selectedDate = new Date(auctionDateTime);
             
             if (selectedDate <= now) {
-                alert("Auction must end in the future");
+                toast.warning("Auction must end in the future");
                 return;
             }
 
             // Find selected product to get batch ID
             const selectedProduct = products.find(p => p.id === auctionForm.productId);
             if (!selectedProduct) {
-                alert("Please select a valid product");
+                toast.warning("Please select a valid product");
                 return;
             }
 
             if (!selectedProduct.batch) {
-                alert("This product is missing batch/traceability data. Cannot create an auction for untracked products.");
+                toast.warning("This product is missing batch/traceability data. Cannot create an auction for untracked products.");
                 return;
             }
 
@@ -153,10 +155,11 @@ export default function BusinessPage() {
             setShowCreateAuction(false);
             setAuctionForm({ productId: "", minPricePerKg: "", quantity: "" });
             setAuctionDateTime("");
+            toast.success("Auction created successfully!");
             fetchData(); // Refresh
         } catch (error) {
             console.error("Error creating auction:", error);
-            alert("Failed to create auction");
+            toast.error("Failed to create auction");
         }
     };
 
@@ -171,10 +174,11 @@ export default function BusinessPage() {
                 }
             });
             setShowOfferModal(false);
+            toast.success("Offer submitted successfully!");
             fetchData(); // Refresh
         } catch (error) {
             console.error("Error making offer:", error);
-            alert("Failed to make offer: " + error.message);
+            toast.error("Failed to make offer: " + error.message);
         }
     };
 
@@ -185,10 +189,11 @@ export default function BusinessPage() {
         setEndingAuction(auctionId);
         try {
             await graphqlRequest(CLOSE_AUCTION_MUTATION, { auctionId });
+            toast.success("Auction ended successfully!");
             fetchData(); // Refresh
         } catch (error) {
             console.error("Error ending auction:", error);
-            alert("Failed to end auction: " + error.message);
+            toast.error("Failed to end auction: " + error.message);
         } finally {
             setEndingAuction(null);
         }

@@ -32,8 +32,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Index for faster lookups
-userSchema.index({ email: 1 });
-userSchema.index({ phone: 1 });
+
 userSchema.index({ 'otp.expiresAt': 1 }, { expireAfterSeconds: 0 }); // TTL index for auto-cleanup
 
 // Virtual to check if account is currently locked

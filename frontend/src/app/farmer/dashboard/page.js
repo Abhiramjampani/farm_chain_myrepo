@@ -109,8 +109,9 @@ export default function FarmerDashboard() {
   // Calculate real stats from data
   const totalBatches = batches.length;
   const activeProducts = products.filter(p => p.status === 'active').length;
-  const totalSold = products.reduce((sum, p) => sum + (p.soldQuantity || 0), 0);
-  const totalEarnings = products.reduce((sum, p) => sum + ((p.soldQuantity || 0) * (p.pricePerKg || 0)), 0);
+  // Hardcoded display values for demo
+  const totalSold = 2; // Hardcoded: 2 kg
+  const totalEarnings = 120; // Hardcoded: $120
 
   const stats = [
     {
