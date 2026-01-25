@@ -33,7 +33,8 @@ India's agricultural supply chain faces several critical systemic issues that hu
 
 We leverage a hybrid architecture combining a user-friendly **Next.js Frontend**, a robust **GraphQL Backend**, and a secure **Ethereum/Polygon Blockchain** layer. This ensures that while the user experience remains fast and seamless, the core data regarding product origin and quality remains tamper-proof.
 
-![System Architecture](/Users/p0b08vn/.gemini/antigravity/brain/5b7db2d3-1981-4b55-a6f6-b254d1e66ff6/uploaded_image_1769342310100.png)
+![WhatsApp Image 2026-01-25 at 16 50 47](https://github.com/user-attachments/assets/2b0e7f29-4d12-4ede-9a01-b3d9d51740f3)
+
 
 ### Key Highlights
 
