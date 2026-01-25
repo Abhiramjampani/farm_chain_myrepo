@@ -9,7 +9,7 @@ const googleAuthService = require("../services/googleAuthService");
  * Handles authentication, OTP-based password reset
  */
 class AuthController {
-    
+
     // ==================== SIGNUP ====================
     async signup(name, email, phone, password, role = 'user') {
         // Validate input
@@ -42,7 +42,7 @@ class AuthController {
 
         // Send welcome email (non-blocking)
         if (email) {
-            emailService.sendWelcomeEmail(email, name).catch(err => 
+            emailService.sendWelcomeEmail(email, name).catch(err =>
                 console.log('[WELCOME EMAIL] Failed:', err.message)
             );
         }
@@ -50,12 +50,8 @@ class AuthController {
         return { token, user };
     }
 
-<<<<<<< Updated upstream
+
     async login(identifier, password, role) {
-=======
-    // ==================== LOGIN ====================
-    async login(identifier, password) {
->>>>>>> Stashed changes
         if (!identifier) {
             throw new Error("Email or phone is required");
         }
@@ -181,7 +177,7 @@ class AuthController {
 
         return {
             success: true,
-            message: emailSent 
+            message: emailSent
                 ? `OTP sent to your email. Valid for ${otpService.OTP_EXPIRY_MINUTES} minutes.`
                 : `OTP generated successfully`,
             expiresIn: otpService.OTP_EXPIRY_MINUTES * 60,
@@ -220,7 +216,7 @@ class AuthController {
             // Handle failed attempt
             if (validation.incrementAttempts) {
                 await userService.incrementOTPAttempts(user._id);
-                
+
                 // Check if should lock after this attempt
                 const updatedUser = await userService.findById(user._id);
                 if (updatedUser.otp.attempts >= otpService.MAX_ATTEMPTS) {
@@ -239,9 +235,9 @@ class AuthController {
         // Mark OTP as verified
         await userService.markOTPVerified(user._id);
 
-        return { 
-            success: true, 
-            message: "OTP verified successfully. You can now reset your password." 
+        return {
+            success: true,
+            message: "OTP verified successfully. You can now reset your password."
         };
     }
 
@@ -269,7 +265,7 @@ class AuthController {
 
         // Verify OTP one more time (defense in depth)
         const validation = otpService.validateOTP(user.otp, otp.toString());
-        
+
         // For reset, we also accept already-verified OTP
         if (!validation.valid && validation.code !== 'ALREADY_USED') {
             if (!user.otp?.verified) {
@@ -288,9 +284,9 @@ class AuthController {
 
         console.log(`[PASSWORD RESET] Success for ${identifier}`);
 
-        return { 
-            success: true, 
-            message: "Password reset successful. Please login with your new password." 
+        return {
+            success: true,
+            message: "Password reset successful. Please login with your new password."
         };
     }
 

@@ -12,16 +12,16 @@ const userSchema = new mongoose.Schema(
             default: "user",
         },
         googleId: { type: String, unique: true, sparse: true },
-        
+
         // OTP fields for password reset
-        otp: { 
+        otp: {
             hash: { type: String },           // Hashed OTP for security
             expiresAt: { type: Date },        // When OTP expires
             attempts: { type: Number, default: 0 },  // Failed verification attempts
             lastSentAt: { type: Date },       // Rate limiting - when last OTP was sent
             verified: { type: Boolean, default: false }  // Whether OTP has been verified
         },
-        
+
         // Account security
         passwordResetToken: { type: String },  // Optional: for additional security
         passwordChangedAt: { type: Date },     // Track when password was last changed
@@ -32,16 +32,14 @@ const userSchema = new mongoose.Schema(
 );
 
 // Index for faster lookups
-<<<<<<< Updated upstream
 
-=======
 userSchema.index({ email: 1 });
 userSchema.index({ phone: 1 });
->>>>>>> Stashed changes
+
 userSchema.index({ 'otp.expiresAt': 1 }, { expireAfterSeconds: 0 }); // TTL index for auto-cleanup
 
 // Virtual to check if account is currently locked
-userSchema.virtual('isLocked').get(function() {
+userSchema.virtual('isLocked').get(function () {
     return this.accountLocked && this.lockUntil && this.lockUntil > new Date();
 });
 
