@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -24,14 +24,9 @@ import { useAuth } from "@/context/AuthContext";
 const navigation = [
   { name: "Dashboard", href: "/farmer/dashboard", icon: LayoutDashboard },
   { name: "Farm Management", href: "/farmer/farm-management", icon: Sprout },
-  {
-    name: "Batch Tracking",
-    href: "/farmer/batch-tracking",
-    icon: PackageSearch,
-  },
+  { name: "Batch Tracking", href: "/farmer/batch-tracking", icon: PackageSearch },
   { name: "Products", href: "/farmer/products", icon: ShoppingCart },
   { name: "Business Hub", href: "/farmer/business", icon: Gavel },
-  { name: "Wallet", href: "/farmer/wallet", icon: Wallet },
   { name: "Earnings", href: "/farmer/earnings", icon: TrendingUp },
   { name: "Profile", href: "/farmer/profile", icon: User },
 ];
@@ -40,7 +35,13 @@ export default function FarmerLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/auth/login");
+    }
+  }, [user, loading, router]);
 
   const getInitials = (name) => {
     if (!name) return "U";

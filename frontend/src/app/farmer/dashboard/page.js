@@ -37,6 +37,8 @@ export default function FarmerDashboard() {
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
+    if (!user) return; // Wait for auth
+
     const fetchFarm = async () => {
       try {
         const data = await graphqlRequest(MY_FARMS_QUERY);
@@ -50,7 +52,7 @@ export default function FarmerDashboard() {
       }
     };
     fetchFarm();
-  }, []);
+  }, [user]);
 
   // Fetch batches and products when farmId is available
   useEffect(() => {

@@ -28,7 +28,10 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { useAuth } from '@/context/AuthContext';
+
 export default function BusinessPage() {
+    const { user } = useAuth(); // Add this
     const router = useRouter();
     const [activeTab, setActiveTab] = useState("auctions");
     const [auctions, setAuctions] = useState([]);
@@ -73,8 +76,9 @@ export default function BusinessPage() {
     });
 
     useEffect(() => {
+        if (!user) return; // Wait for auth
         fetchData();
-    }, []);
+    }, [user]);
 
     const fetchData = async () => {
         setLoading(true);

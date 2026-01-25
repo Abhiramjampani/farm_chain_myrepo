@@ -42,6 +42,7 @@ export default function Profile() {
     });
 
     useEffect(() => {
+        if (!user) return; // Wait for auth
         fetchProfile();
     }, [user]);
 

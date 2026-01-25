@@ -13,12 +13,17 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import { useAuth } from '@/context/AuthContext';
+
 export default function Earnings() {
+    const { user } = useAuth(); // Add this
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [sortOrder, setSortOrder] = useState('desc'); // 'desc' = highest first
 
     useEffect(() => {
+        if (!user) return; // Wait for auth
+
         const fetchProducts = async () => {
             try {
                 const data = await graphqlRequest(MY_PRODUCTS_QUERY);
@@ -30,7 +35,7 @@ export default function Earnings() {
             }
         };
         fetchProducts();
-    }, []);
+    }, [user]);
 
     // Calculate totals
     const totalSold = products.reduce((sum, p) => sum + (p.soldQuantity || 0), 0);

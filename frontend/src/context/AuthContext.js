@@ -33,6 +33,9 @@ export function AuthProvider({ children }) {
           }
         } catch (err) {
           console.error("Auth refresh failed:", err);
+          localStorage.removeItem("farmchain_token");
+          localStorage.removeItem("farmchain_user");
+          setUser(null);
         }
       }
       setLoading(false);

@@ -11,7 +11,12 @@ import { CREATE_FARM_MUTATION, MY_FARMS_QUERY, UPDATE_FARM_MUTATION, DELETE_FARM
 const SOIL_TYPES = ['Clay', 'Sandy', 'Loamy', 'Silt', 'Peat', 'Chalky', 'Black Cotton'];
 const ORGANIC_STATUS = ['Organic', 'In Transition', 'Conventional'];
 
+import { useAuth } from '@/context/AuthContext';
+
+// ... 
+
 export default function FarmManagement() {
+    const { user } = useAuth(); // Add this
     const [farms, setFarms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showFarmModal, setShowFarmModal] = useState(false);
@@ -30,8 +35,9 @@ export default function FarmManagement() {
     });
 
     useEffect(() => {
+        if (!user) return; // Wait for auth
         fetchFarms();
-    }, []);
+    }, [user]);
 
     const fetchFarms = async () => {
         try {

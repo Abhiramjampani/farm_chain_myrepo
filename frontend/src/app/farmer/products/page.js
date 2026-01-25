@@ -9,7 +9,10 @@ import { MY_PRODUCTS_QUERY, CREATE_PRODUCT_MUTATION, UPDATE_PRODUCT_MUTATION } f
 import { MY_FARMS_QUERY } from "@/lib/graphql/farm";
 import { LIST_BATCHES_SIMPLE_QUERY } from "@/lib/graphql/batch";
 
+import { useAuth } from '@/context/AuthContext';
+
 export default function Products() {
+    const { user } = useAuth(); // Add this
     const [products, setProducts] = useState([]);
     const [batches, setBatches] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -31,8 +34,9 @@ export default function Products() {
     });
 
     useEffect(() => {
+        if (!user) return; // Wait for auth
         fetchData();
-    }, []);
+    }, [user]);
 
     const fetchData = async () => {
         setLoading(true);

@@ -45,7 +45,10 @@ const ACTIVITY_TYPES = [
     { value: 'SHIPPED', label: 'Shipped', icon: Truck, color: 'bg-emerald-100 text-emerald-700' }
 ];
 
+import { useAuth } from '@/context/AuthContext';
+
 export default function BatchTracking() {
+    const { user } = useAuth();
     const router = useRouter();
     const [batches, setBatches] = useState([]);
     const [farms, setFarms] = useState([]);
@@ -90,10 +93,11 @@ export default function BatchTracking() {
     });
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        if (!user) return;
+        fetchInitialData();
+    }, [user]);
 
-    const fetchData = async () => {
+    const fetchInitialData = async () => {
         try {
             setLoading(true);
             const farmsData = await graphqlRequest(MY_FARMS_QUERY);
