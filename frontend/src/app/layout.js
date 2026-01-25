@@ -18,6 +18,11 @@ export const metadata = {
   title: "FarmChain - Blockchain Supply Chain Tracker",
   description:
     "Track food from farm to plate using blockchain technology. Transparent, tamper-proof tracking ensuring authenticity and building trust.",
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({ children }) {

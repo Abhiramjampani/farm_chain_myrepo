@@ -8,6 +8,8 @@ import CreateBatchModal from "@/components/farmer/CreateBatchModal";
 import { useAuth } from "@/context/AuthContext";
 import { graphqlRequest } from "@/lib/apollo-client";
 import { MY_FARMS_QUERY } from "@/lib/graphql/farm";
+import { LIST_BATCHES_SIMPLE_QUERY } from "@/lib/graphql/batch";
+import { MY_PRODUCTS_QUERY } from "@/lib/graphql/product";
 import {
   TrendingUp,
   Package,
@@ -21,113 +23,8 @@ import {
   Clock,
   CheckCircle2,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
-
-// Mock Data
-const stats = [
-  {
-    label: "Total Batches",
-    value: "124",
-    change: "+12%",
-    trend: "up",
-    icon: Package,
-    color: "text-blue-500",
-    bg: "bg-blue-500/10",
-    border: "border-blue-200",
-  },
-  {
-    label: "Active Products",
-    value: "48",
-    change: "+8%",
-    trend: "up",
-    icon: Activity,
-    color: "text-emerald-500",
-    bg: "bg-emerald-500/10",
-    border: "border-emerald-200",
-  },
-  {
-    label: "Total Earnings",
-    value: "$45,280",
-    change: "+23%",
-    trend: "up",
-    icon: DollarSign,
-    color: "text-violet-500",
-    bg: "bg-violet-500/10",
-    border: "border-violet-200",
-  },
-  {
-    label: "This Month",
-    value: "$12,540",
-    change: "-5%",
-    trend: "down",
-    icon: TrendingUp,
-    color: "text-amber-500",
-    bg: "bg-amber-500/10",
-    border: "border-amber-200",
-  },
-];
-
-const recentBatches = [
-  {
-    id: "BCH-001",
-    product: "Organic Tomatoes",
-    quantity: "500 kg",
-    status: "In Transit",
-    date: "Jan 20, 2026",
-  },
-  {
-    id: "BCH-002",
-    product: "Fresh Lettuce",
-    quantity: "300 kg",
-    status: "Delivered",
-    date: "Jan 19, 2026",
-  },
-  {
-    id: "BCH-003",
-    product: "Bell Peppers",
-    quantity: "400 kg",
-    status: "Processing",
-    date: "Jan 18, 2026",
-  },
-  {
-    id: "BCH-004",
-    product: "Cucumbers",
-    quantity: "350 kg",
-    status: "In Transit",
-    date: "Jan 17, 2026",
-  },
-];
-
-const activityData = [
-  {
-    action: "New batch created",
-    batch: "BCH-001",
-    time: "2 hours ago",
-    icon: Package,
-    color: "bg-blue-500",
-  },
-  {
-    action: "Batch delivered",
-    batch: "BCH-002",
-    time: "5 hours ago",
-    icon: CheckCircle2,
-    color: "bg-emerald-500",
-  },
-  {
-    action: "Quality verified",
-    batch: "BCH-003",
-    time: "1 day ago",
-    icon: Activity,
-    color: "bg-violet-500",
-  },
-  {
-    action: "Payment received",
-    amount: "$2,450",
-    time: "2 days ago",
-    icon: DollarSign,
-    color: "bg-amber-500",
-  },
-];
 
 export default function FarmerDashboard() {
   const { user } = useAuth();
@@ -135,6 +32,9 @@ export default function FarmerDashboard() {
   const [isCreateBatchOpen, setIsCreateBatchOpen] = useState(false);
   const [farmId, setFarmId] = useState(null);
   const [loadingFarm, setLoadingFarm] = useState(true);
+  const [batches, setBatches] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
     const fetchFarm = async () => {
@@ -151,6 +51,35 @@ export default function FarmerDashboard() {
     };
     fetchFarm();
   }, []);
+
+  // Fetch batches and products when farmId is available
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!farmId) {
+        setLoadingData(false);
+        return;
+      }
+      
+      try {
+        const [batchesData, productsData] = await Promise.all([
+          graphqlRequest(LIST_BATCHES_SIMPLE_QUERY, { farm: farmId }),
+          graphqlRequest(MY_PRODUCTS_QUERY)
+        ]);
+        
+        setBatches(batchesData?.listBatches || []);
+        setProducts(productsData?.myProducts || []);
+      } catch (err) {
+        console.error("Failed to fetch dashboard data:", err);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    
+    if (!loadingFarm) {
+      fetchData();
+    }
+  }, [farmId, loadingFarm]);
+
   const handleCreateBatch = () => {
     if (loadingFarm) return;
     
@@ -175,6 +104,82 @@ export default function FarmerDashboard() {
     return name.split(" ")[0];
   };
 
+  // Calculate real stats from data
+  const totalBatches = batches.length;
+  const activeProducts = products.filter(p => p.status === 'active').length;
+  const totalSold = products.reduce((sum, p) => sum + (p.soldQuantity || 0), 0);
+  const totalEarnings = products.reduce((sum, p) => sum + ((p.soldQuantity || 0) * (p.pricePerKg || 0)), 0);
+
+  const stats = [
+    {
+      label: "Total Batches",
+      value: totalBatches.toString(),
+      change: totalBatches > 0 ? `${totalBatches} active` : "Start now",
+      trend: "up",
+      icon: Package,
+      color: "text-blue-500",
+      bg: "bg-blue-500/10",
+      border: "border-blue-200",
+    },
+    {
+      label: "Active Products",
+      value: activeProducts.toString(),
+      change: products.length > 0 ? `of ${products.length} total` : "Create products",
+      trend: "up",
+      icon: Activity,
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-200",
+    },
+    {
+      label: "Total Sold",
+      value: `${totalSold.toFixed(0)} kg`,
+      change: totalSold > 0 ? "Units sold" : "No sales yet",
+      trend: totalSold > 0 ? "up" : "down",
+      icon: DollarSign,
+      color: "text-violet-500",
+      bg: "bg-violet-500/10",
+      border: "border-violet-200",
+    },
+    {
+      label: "Est. Revenue",
+      value: `$${totalEarnings.toFixed(0)}`,
+      change: totalEarnings > 0 ? "From sales" : "Pending",
+      trend: totalEarnings > 0 ? "up" : "down",
+      icon: TrendingUp,
+      color: "text-amber-500",
+      bg: "bg-amber-500/10",
+      border: "border-amber-200",
+    },
+  ];
+
+  // Get recent batches (last 5)
+  const recentBatches = batches.slice(0, 5).map(batch => ({
+    id: batch.id?.substring(0, 8) || 'N/A',
+    product: batch.cropName || batch.cropCategory || 'Unknown',
+    variety: batch.variety || '',
+    status: batch.stateLabel || batch.currentState || 'Unknown',
+    date: batch.sowingDate ? new Date(batch.sowingDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'
+  }));
+
+  // Map status to colors
+  const getStatusColor = (status) => {
+    const statusLower = status?.toLowerCase() || '';
+    if (statusLower.includes('harvest') || statusLower.includes('complete')) return { bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-600' };
+    if (statusLower.includes('ship') || statusLower.includes('transit')) return { bg: 'bg-blue-100', text: 'text-blue-700', dot: 'bg-blue-600' };
+    if (statusLower.includes('grow') || statusLower.includes('process')) return { bg: 'bg-amber-100', text: 'text-amber-700', dot: 'bg-amber-600' };
+    return { bg: 'bg-slate-100', text: 'text-slate-700', dot: 'bg-slate-600' };
+  };
+
+  // Recent activity from batches (inferred)
+  const activityData = batches.slice(0, 4).map((batch, index) => ({
+    action: index === 0 ? "Batch created" : batch.stateLabel || "Activity logged",
+    batch: batch.cropName || batch.id?.substring(0, 8),
+    time: batch.sowingDate ? `Sowed ${new Date(batch.sowingDate).toLocaleDateString()}` : "Recently",
+    icon: index % 2 === 0 ? Package : CheckCircle2,
+    color: index % 2 === 0 ? "bg-blue-500" : "bg-emerald-500",
+  }));
+
   return (
     <FarmerLayout>
       <div className="space-y-8">
@@ -195,9 +200,11 @@ export default function FarmerDashboard() {
                 {getGreeting()}, {getFirstName(user?.name)}! 👋
               </h1>
               <p className="text-emerald-100/80 text-lg max-w-xl">
-                Your farm is operating at{" "}
-                <span className="text-white font-bold">94% efficiency</span>{" "}
-                today. You have 3 pending tasks.
+                {batches.length > 0 ? (
+                  <>You have <span className="text-white font-bold">{batches.length} batches</span> and <span className="text-white font-bold">{activeProducts} active products</span>.</>
+                ) : (
+                  <>Get started by creating your first batch to track your farm production.</>
+                )}
               </p>
             </div>
             <div className="flex gap-3">
@@ -234,21 +241,16 @@ export default function FarmerDashboard() {
                   <stat.icon className="w-6 h-6" strokeWidth={2.5} />
                 </div>
                 <div
-                  className={`flex items-center gap-1 text-sm font-bold ${
-                    stat.trend === "up" ? "text-emerald-600" : "text-rose-500"
+                  className={`flex items-center gap-1 text-xs font-medium ${
+                    stat.trend === "up" ? "text-emerald-600" : "text-slate-500"
                   } bg-slate-50 px-2 py-1 rounded-lg`}
                 >
-                  {stat.trend === "up" ? (
-                    <ArrowUpRight className="w-4 h-4" />
-                  ) : (
-                    <ArrowDownRight className="w-4 h-4" />
-                  )}
                   {stat.change}
                 </div>
               </div>
               <div>
                 <h3 className="text-3xl font-bold text-slate-900 mb-1 tracking-tight">
-                  {stat.value}
+                  {loadingData ? <Loader2 className="w-6 h-6 animate-spin" /> : stat.value}
                 </h3>
                 <p className="text-sm font-medium text-slate-500">
                   {stat.label}
@@ -276,87 +278,98 @@ export default function FarmerDashboard() {
                   Track your latest production
                 </p>
               </div>
-              <button className="text-emerald-600 hover:text-emerald-700 font-bold text-sm bg-emerald-50 px-4 py-2 rounded-lg transition-colors">
+              <button 
+                onClick={() => router.push('/farmer/batch-tracking')}
+                className="text-emerald-600 hover:text-emerald-700 font-bold text-sm bg-emerald-50 px-4 py-2 rounded-lg transition-colors"
+              >
                 View All
               </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-slate-50/50">
-                  <tr>
-                    <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Batch ID
-                    </th>
-                    <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Product
-                    </th>
-                    <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Quantity
-                    </th>
-                    <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {recentBatches.map((batch, index) => (
-                    <motion.tr
-                      key={index}
-                      className="hover:bg-slate-50/80 transition-colors"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.4 + index * 0.05 }}
-                    >
-                      <td className="px-8 py-4 whitespace-nowrap">
-                        <span className="font-mono text-sm font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">
-                          {batch.id}
-                        </span>
-                      </td>
-                      <td className="px-8 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-slate-900">
-                          {batch.product}
-                        </span>
-                      </td>
-                      <td className="px-8 py-4 whitespace-nowrap">
-                        <span className="text-sm text-slate-500">
-                          {batch.quantity}
-                        </span>
-                      </td>
-                      <td className="px-8 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
-                            batch.status === "Delivered"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : batch.status === "In Transit"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-amber-100 text-amber-700"
-                          }`}
+              {loadingData ? (
+                <div className="flex justify-center items-center py-16">
+                  <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+                </div>
+              ) : recentBatches.length > 0 ? (
+                <table className="w-full">
+                  <thead className="bg-slate-50/50">
+                    <tr>
+                      <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Batch ID
+                      </th>
+                      <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Product
+                      </th>
+                      <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Variety
+                      </th>
+                      <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-8 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Sowing Date
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {recentBatches.map((batch, index) => {
+                      const statusColors = getStatusColor(batch.status);
+                      return (
+                        <motion.tr
+                          key={index}
+                          className="hover:bg-slate-50/80 transition-colors cursor-pointer"
+                          onClick={() => router.push('/farmer/batch-tracking')}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.4 + index * 0.05 }}
                         >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              batch.status === "Delivered"
-                                ? "bg-emerald-600"
-                                : batch.status === "In Transit"
-                                  ? "bg-blue-600"
-                                  : "bg-amber-600"
-                            }`}
-                          ></span>
-                          {batch.status}
-                        </span>
-                      </td>
-                      <td className="px-8 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2 text-sm text-slate-500">
-                          <Clock className="w-4 h-4" />
-                          {batch.date}
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
+                          <td className="px-8 py-4 whitespace-nowrap">
+                            <span className="font-mono text-sm font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">
+                              {batch.id}
+                            </span>
+                          </td>
+                          <td className="px-8 py-4 whitespace-nowrap">
+                            <span className="text-sm font-medium text-slate-900">
+                              {batch.product}
+                            </span>
+                          </td>
+                          <td className="px-8 py-4 whitespace-nowrap">
+                            <span className="text-sm text-slate-500">
+                              {batch.variety || '-'}
+                            </span>
+                          </td>
+                          <td className="px-8 py-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${statusColors.bg} ${statusColors.text}`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${statusColors.dot}`}></span>
+                              {batch.status}
+                            </span>
+                          </td>
+                          <td className="px-8 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-2 text-sm text-slate-500">
+                              <Clock className="w-4 h-4" />
+                              {batch.date}
+                            </div>
+                          </td>
+                        </motion.tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <AlertCircle className="w-12 h-12 text-slate-300 mb-4" />
+                  <p className="text-slate-500 font-medium">No batches yet</p>
+                  <p className="text-slate-400 text-sm mt-1">Create your first batch to get started</p>
+                  <button
+                    onClick={() => setIsCreateBatchOpen(true)}
+                    className="mt-4 px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium text-sm hover:bg-emerald-600 transition"
+                  >
+                    Create Batch
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -371,34 +384,40 @@ export default function FarmerDashboard() {
               <h2 className="text-xl font-bold text-slate-900 mb-6">
                 Recent Activity
               </h2>
-              <div className="space-y-6 relative">
-                {/* Timeline Line */}
-                <div className="absolute left-[19px] top-2 bottom-2 w-[2px] bg-slate-100"></div>
+              {activityData.length > 0 ? (
+                <div className="space-y-6 relative">
+                  {/* Timeline Line */}
+                  <div className="absolute left-[19px] top-2 bottom-2 w-[2px] bg-slate-100"></div>
 
-                {activityData.map((activity, index) => (
-                  <motion.div
-                    key={index}
-                    className="relative flex gap-4"
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
-                  >
-                    <div
-                      className={`relative z-10 w-10 h-10 rounded-full ${activity.color} shadow-lg shadow-black/5 flex items-center justify-center text-white shrink-0`}
+                  {activityData.map((activity, index) => (
+                    <motion.div
+                      key={index}
+                      className="relative flex gap-4"
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.5 + index * 0.1 }}
                     >
-                      <activity.icon className="w-5 h-5" />
-                    </div>
-                    <div className="pt-1">
-                      <p className="text-sm font-bold text-slate-900">
-                        {activity.action}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1 font-medium">
-                        {activity.batch || activity.amount} • {activity.time}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+                      <div
+                        className={`relative z-10 w-10 h-10 rounded-full ${activity.color} shadow-lg shadow-black/5 flex items-center justify-center text-white shrink-0`}
+                      >
+                        <activity.icon className="w-5 h-5" />
+                      </div>
+                      <div className="pt-1">
+                        <p className="text-sm font-bold text-slate-900">
+                          {activity.action}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1 font-medium">
+                          {activity.batch} • {activity.time}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-slate-400 text-sm">No recent activity</p>
+                </div>
+              )}
             </motion.div>
 
             <motion.div
@@ -414,7 +433,10 @@ export default function FarmerDashboard() {
                   Complete your profile verification to unlock lower transaction
                   fees.
                 </p>
-                <button className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-bold transition-colors">
+                <button 
+                  onClick={() => router.push('/farmer/profile')}
+                  className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-bold transition-colors"
+                >
                   Verify Now
                 </button>
               </div>
@@ -428,7 +450,12 @@ export default function FarmerDashboard() {
         onClose={() => setIsCreateBatchOpen(false)}
         farmId={farmId}
         onSuccess={() => {
-          // Refresh logic can be added here
+          // Refresh batches after creation
+          if (farmId) {
+            graphqlRequest(LIST_BATCHES_SIMPLE_QUERY, { farm: farmId })
+              .then(data => setBatches(data?.listBatches || []))
+              .catch(console.error);
+          }
         }}
       />
     </FarmerLayout>

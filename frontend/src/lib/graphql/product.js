@@ -7,6 +7,8 @@ export const MY_PRODUCTS_QUERY = `
             category
             pricePerKg
             availableQty
+            totalQuantity
+            soldQuantity
             minOrderQty
             photos
             isOrganic

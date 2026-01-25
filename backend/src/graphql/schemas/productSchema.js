@@ -9,6 +9,8 @@ type Product {
     category: String!
     pricePerKg: Float!
     availableQty: Float!
+    totalQuantity: Float!
+    soldQuantity: Float!
     minOrderQty: Float!
     photos: [String!]!
     isOrganic: Boolean!

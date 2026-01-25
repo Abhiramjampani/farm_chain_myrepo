@@ -5,7 +5,7 @@ import FarmerLayout from '@/components/farmer/FarmerLayout';
 import { ShoppingCart, Plus, Loader2, X, Leaf, Package, DollarSign, Tag, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { graphqlRequest } from "@/lib/apollo-client";
-import { MY_PRODUCTS_QUERY, CREATE_PRODUCT_MUTATION } from "@/lib/graphql/product";
+import { MY_PRODUCTS_QUERY, CREATE_PRODUCT_MUTATION, UPDATE_PRODUCT_MUTATION } from "@/lib/graphql/product";
 import { MY_FARMS_QUERY } from "@/lib/graphql/farm";
 import { LIST_BATCHES_SIMPLE_QUERY } from "@/lib/graphql/batch";
 
@@ -14,6 +14,10 @@ export default function Products() {
     const [batches, setBatches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showStockModal, setShowStockModal] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [newAvailableQty, setNewAvailableQty] = useState("");
+    const [updating, setUpdating] = useState(false);
     const [farmId, setFarmId] = useState(null);
 
     const [form, setForm] = useState({
@@ -115,6 +119,33 @@ export default function Products() {
         }
     }, [form.batchId, batches]);
 
+    const openStockModal = (product) => {
+        setSelectedProduct(product);
+        setNewAvailableQty(product.availableQty?.toString() || "0");
+        setShowStockModal(true);
+    };
+
+    const handleUpdateStock = async (e) => {
+        e.preventDefault();
+        if (!selectedProduct) return;
+        
+        setUpdating(true);
+        try {
+            await graphqlRequest(UPDATE_PRODUCT_MUTATION, {
+                id: selectedProduct.id,
+                availableQty: parseFloat(newAvailableQty)
+            });
+            setShowStockModal(false);
+            setSelectedProduct(null);
+            fetchData(); // Refresh list
+        } catch (error) {
+            console.error("Error updating stock:", error);
+            alert("Failed to update stock: " + error.message);
+        } finally {
+            setUpdating(false);
+        }
+    };
+
     const categories = ["Vegetables", "Fruits", "Grains", "Spices", "Dairy", "Other"];
 
     // Helper to check if batch is ready for product creation
@@ -202,7 +233,10 @@ export default function Products() {
                                     </div>
                                 </div>
 
-                                <button className="w-full py-2 bg-white border border-slate-200 text-slate-600 font-medium rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                                <button 
+                                    onClick={() => openStockModal(product)}
+                                    className="w-full py-2 bg-white border border-slate-200 text-slate-600 font-medium rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                                >
                                     Manage Stock
                                 </button>
                             </motion.div>
@@ -351,6 +385,89 @@ export default function Products() {
                                     >
                                         Add Product to Inventory
                                     </button>
+                                </form>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+
+                {/* Stock Management Modal */}
+                <AnimatePresence>
+                    {showStockModal && selectedProduct && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl relative"
+                            >
+                                <button 
+                                    onClick={() => { setShowStockModal(false); setSelectedProduct(null); }}
+                                    className="absolute top-6 right-6 text-slate-400 hover:text-slate-600"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                                
+                                <h2 className="text-2xl font-bold text-slate-900 mb-2">Manage Stock</h2>
+                                <p className="text-slate-500 mb-6">{selectedProduct.title}</p>
+
+                                <form onSubmit={handleUpdateStock} className="space-y-6">
+                                    {/* Read-only info */}
+                                    <div className="bg-slate-50 rounded-xl p-4 space-y-3">
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-500 text-sm">Total Quantity</span>
+                                            <span className="font-bold text-slate-700">{selectedProduct.totalQuantity || selectedProduct.availableQty || 0} kg</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-500 text-sm">Sold Quantity</span>
+                                            <span className="font-bold text-emerald-600">{selectedProduct.soldQuantity || 0} kg</span>
+                                        </div>
+                                        <div className="border-t border-slate-200 pt-3 flex justify-between">
+                                            <span className="text-slate-500 text-sm">Current Available</span>
+                                            <span className="font-bold text-slate-900">{selectedProduct.availableQty || 0} kg</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Editable Available Quantity */}
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                                            Update Available Quantity (kg)
+                                        </label>
+                                        <div className="relative">
+                                            <Package className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                            <input
+                                                type="number"
+                                                required
+                                                min="0"
+                                                step="0.1"
+                                                className="w-full pl-10 py-3 rounded-xl border-slate-200 focus:ring-emerald-500 focus:border-emerald-500 text-lg font-bold"
+                                                value={newAvailableQty}
+                                                onChange={(e) => setNewAvailableQty(e.target.value)}
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <p className="text-xs text-slate-400 mt-2">
+                                            This is the quantity currently available for sale
+                                        </p>
+                                    </div>
+
+                                    <div className="flex gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => { setShowStockModal(false); setSelectedProduct(null); }}
+                                            className="flex-1 py-3 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button 
+                                            type="submit"
+                                            disabled={updating}
+                                            className="flex-1 bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        >
+                                            {updating && <Loader2 className="w-4 h-4 animate-spin" />}
+                                            {updating ? "Saving..." : "Update Stock"}
+                                        </button>
+                                    </div>
                                 </form>
                             </motion.div>
                         </div>

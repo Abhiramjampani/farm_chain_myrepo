@@ -8,6 +8,7 @@ const productSchema = new mongoose.Schema({
     category: { type: String, required: true },
     pricePerKg: { type: Number, required: true },
     availableQty: { type: Number, required: true },
+    totalQuantity: { type: Number, required: true },
     minOrderQty: { type: Number, default: 1 },
     photos: [String],
     isOrganic: { type: Boolean, default: false },

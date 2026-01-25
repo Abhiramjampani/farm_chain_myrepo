@@ -32,6 +32,7 @@ const productResolver = {
                 category,
                 pricePerKg,
                 availableQty,
+                totalQuantity: availableQty, // Store original quantity
                 minOrderQty: minOrderQty || 1,
                 photos: photos || [],
                 isOrganic: isOrganic || false,
@@ -77,7 +78,13 @@ const productResolver = {
     },
 
     Product: {
-        id: (parent) => parent._id.toString()
+        id: (parent) => parent._id.toString(),
+        totalQuantity: (parent) => parent.totalQuantity || parent.availableQty || 0,
+        soldQuantity: (parent) => {
+            const total = parent.totalQuantity || parent.availableQty || 0;
+            const available = parent.availableQty || 0;
+            return Math.max(0, total - available);
+        }
     }
 };
 
