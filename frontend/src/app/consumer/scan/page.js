@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import ConsumerLayout from "@/components/consumer/ConsumerLayout";
@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import ScannerModal from '@/components/common/ScannerModal';
 
-export default function ConsumerScan() {
+function ConsumerScanContent() {
   const searchParams = useSearchParams();
   const [scanResult, setScanResult] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -506,5 +506,19 @@ export default function ConsumerScan() {
         onScan={handleScanWithCode}
       />
     </ConsumerLayout>
+  );
+}
+
+export default function ConsumerScan() {
+  return (
+    <Suspense fallback={
+      <ConsumerLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+        </div>
+      </ConsumerLayout>
+    }>
+      <ConsumerScanContent />
+    </Suspense>
   );
 }
