@@ -55,9 +55,6 @@ export function AuthProvider({ children }) {
     setUser(demoUser);
     return { success: true, user: demoUser };
   };
-      return { success: false, error: err.message };
-    }
-  };
 
   const businessLogin = async (identifier, password) => {
     // DEMO MODE - Accept any business login
