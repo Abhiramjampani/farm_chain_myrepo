@@ -2,14 +2,9 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { graphqlRequest } from "@/lib/apollo-client";
-import {
-  LOGIN_QUERY,
-  SIGNUP_QUERY,
-  ME_QUERY,
-  BUSINESS_LOGIN_QUERY,
-  BUSINESS_SIGNUP_QUERY,
-} from "@/lib/graphql/auth";
+
+// DEMO MODE - No backend required
+const DEMO_MODE = true;
 
 const AuthContext = createContext(null);
 
@@ -20,23 +15,9 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem("farmchain_token");
       const storedUser = localStorage.getItem("farmchain_user");
-
-      if (token && storedUser) {
+      if (storedUser) {
         setUser(JSON.parse(storedUser));
-        try {
-          const data = await graphqlRequest(ME_QUERY);
-          if (data?.me) {
-            setUser(data.me);
-            localStorage.setItem("farmchain_user", JSON.stringify(data.me));
-          }
-        } catch (err) {
-          console.error("Auth refresh failed:", err);
-          localStorage.removeItem("farmchain_token");
-          localStorage.removeItem("farmchain_user");
-          setUser(null);
-        }
       }
       setLoading(false);
     };
@@ -44,81 +25,68 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (identifier, password, role) => {
-    try {
-      const data = await graphqlRequest(LOGIN_QUERY, { identifier, password, role });
-      if (data?.login) {
-        localStorage.setItem("farmchain_token", data.login.token);
-        localStorage.setItem("farmchain_user", JSON.stringify(data.login.user));
-        setUser(data.login.user);
-        return { success: true, user: data.login.user };
-      }
-      return { success: false, error: "Login failed" };
-    } catch (err) {
-      return { success: false, error: err.message };
-    }
+    // DEMO MODE - Accept any credentials
+    const demoUser = {
+      id: "demo-user-123",
+      name: identifier.split("@")[0] || "Demo User",
+      email: identifier,
+      phone: "9999999999",
+      role: role || "farmer",
+    };
+    
+    localStorage.setItem("farmchain_token", "demo-token-12345");
+    localStorage.setItem("farmchain_user", JSON.stringify(demoUser));
+    setUser(demoUser);
+    return { success: true, user: demoUser };
   };
 
   const signup = async (name, email, phone, password, role) => {
-    try {
-      const data = await graphqlRequest(SIGNUP_QUERY, {
-        name,
-        email,
-        phone,
-        password,
-        role,
-      });
-      if (data?.signup) {
-        localStorage.setItem("farmchain_token", data.signup.token);
-        localStorage.setItem(
-          "farmchain_user",
-          JSON.stringify(data.signup.user),
-        );
-        setUser(data.signup.user);
-        return { success: true, user: data.signup.user };
-      }
-      return { success: false, error: "Signup failed" };
-    } catch (err) {
+    // DEMO MODE - Accept any signup
+    const demoUser = {
+      id: "demo-user-" + Date.now(),
+      name: name,
+      email: email,
+      phone: phone,
+      role: role || "farmer",
+    };
+    
+    localStorage.setItem("farmchain_token", "demo-token-12345");
+    localStorage.setItem("farmchain_user", JSON.stringify(demoUser));
+    setUser(demoUser);
+    return { success: true, user: demoUser };
+  };
       return { success: false, error: err.message };
     }
   };
 
   const businessLogin = async (identifier, password) => {
-    try {
-      const data = await graphqlRequest(BUSINESS_LOGIN_QUERY, {
-        identifier,
-        password,
-      });
-      if (data?.businessLogin) {
-        localStorage.setItem("farmchain_token", data.businessLogin.token);
-        localStorage.setItem(
-          "farmchain_user",
-          JSON.stringify({ ...data.businessLogin.business, role: "business" }),
-        );
-        setUser({ ...data.businessLogin.business, role: "business" });
-        return { success: true, user: data.businessLogin.business };
-      }
-      return { success: false, error: "Login failed" };
-    } catch (err) {
-      return { success: false, error: err.message };
-    }
+    // DEMO MODE - Accept any business login
+    const demoBusiness = {
+      id: "demo-business-123",
+      name: identifier.split("@")[0] || "Demo Business",
+      email: identifier,
+      role: "business",
+    };
+    
+    localStorage.setItem("farmchain_token", "demo-token-12345");
+    localStorage.setItem("farmchain_user", JSON.stringify(demoBusiness));
+    setUser(demoBusiness);
+    return { success: true, user: demoBusiness };
   };
 
   const businessSignup = async (businessData) => {
-    try {
-      const data = await graphqlRequest(BUSINESS_SIGNUP_QUERY, businessData);
-      if (data?.businessSignup) {
-        localStorage.setItem("farmchain_token", data.businessSignup.token);
-        localStorage.setItem(
-          "farmchain_user",
-          JSON.stringify({ ...data.businessSignup.business, role: "business" }),
-        );
-        setUser({ ...data.businessSignup.business, role: "business" });
-        return { success: true, user: data.businessSignup.business };
-      }
-      return { success: false, error: "Signup failed" };
-    } catch (err) {
-      return { success: false, error: err.message };
-    }
+    // DEMO MODE - Accept any business signup
+    const demoBusiness = {
+      id: "demo-business-" + Date.now(),
+      name: businessData.name || "Demo Business",
+      email: businessData.email,
+      role: "business",
+    };
+    
+    localStorage.setItem("farmchain_token", "demo-token-12345");
+    localStorage.setItem("farmchain_user", JSON.stringify(demoBusiness));
+    setUser(demoBusiness);
+    return { success: true, user: demoBusiness };
   };
 
   const logout = () => {
